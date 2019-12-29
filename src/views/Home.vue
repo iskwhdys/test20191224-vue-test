@@ -36,7 +36,6 @@ export default class Home extends Vue {
   }
 
   async getAllInventoryData(searchText: string) {
-    // TODO:CORSの対応をしないと別オリジン(≒ドメイン)へのアクセスが出来ない
     const response = await require("axios").get(this.dbHost + "inventory", {
 
     });
