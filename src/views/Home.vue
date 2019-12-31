@@ -9,47 +9,136 @@
     </div> -->
 
     <router-view></router-view>
-    <button @click="onGetData">データ取得</button>
-    <div v-for="item in items" :key="item.productCode + item.inventoryNumber">
-      {{ item.productCode }}：{{ item.inventoryNumber }}：{{ item.quantity }}
-    </div>
+    <button @click="onClickUpdate">データを反映</button><br />
+    <br />
+    <table border="1">
+      <thead>
+        <tr>
+          <td>productCode</td>
+          <td>inventoryNumber</td>
+          <td>quantity</td>
+          <td>削除</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="item in items"
+          :key="item.productCode + item.inventoryNumber"
+        >
+          <!-- 
+            keyとなる項目を編集するとフォーカスが外れるのでreadonly https://teratail.com/questions/182565
+            <td><input readonly v-model="item.productCode"/></td>
+            td><input readonly v-model="item.inventoryNumber"/></td>
+          -->
+          <td>{{ item.productCode }}</td>
+          <td>{{ item.inventoryNumber }}</td>
+          <td>
+            <input @change="onInputChange(item)" v-model="item.quantity" />
+          </td>
+          <td><button @click="onClickDelete(item)">✖</button></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <br />
+    <button @click="onClickAdd">レコード追加</button><br />
+    <table border="1">
+      <thead>
+        <tr>
+          <td>productCode</td>
+          <td>inventoryNumber</td>
+          <td>quantity</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><input v-model="addItem.productCode" /></td>
+          <td><input v-model="addItem.inventoryNumber" /></td>
+          <td><input v-model="addItem.quantity" /></td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
+import axios from "axios";
 
 @Component
 export default class Home extends Vue {
   // axios用の接続先
   dbHost: string = "http://localhost:8081/api/";
-  // 入力された検索ワード
+  dbInventory: string = this.dbHost + "inventory";
+
+// 入力された検索ワード
   searchText: string = "";
-  // 
-  items: any = "";
+  //
+  items = [{ productCode: "", inventoryNumber: "", quantity: "" }];
+  //
+  addItem = { productCode: "", inventoryNumber: "", quantity: "" };
 
-  created() {
-    console.log("created");
-  }
+  async created() {
+    console.log("created-start");
 
-  async onGetData() {
-    console.info("onGetData-start");
-    this.items = await this.getAllInventoryData(this.searchText);
-    console.info(this.items);
-    console.info("onGetData-end");
+    this.items = (await axios.get(this.dbInventory, {})).data;
+
+    console.log("created-end");
   }
 
   // 検索ボタンの押下
   async onClickSearch() {
     console.info("onClickSearch-start");
 
-
     console.info("onClickSearch-end");
   }
 
-  async getAllInventoryData(searchText: string) {
-    const response = await require("axios").get(this.dbHost + "inventory", {});
-    return response.data;
+  async onClickDelete(item: any) {
+    console.log("onClickDelete-start");
+
+    // await axios.delete(this.dbInventory, item);
+
+/*
+    const index = this.items.findIndex(
+      i =>
+        i.productCode === item.productCode &&
+        i.inventoryNumber === item.inventoryNumber
+    );
+    console.log(index);
+
+    const removedUser = this.items.splice(index, 1);
+    
+    console.log(this.items);
+
+    console.log(removedUser);
+    */
+    console.log("onClickDelete-end");
+  }
+
+  async onInputChange(item: any) {
+    console.log("onInputChange-start");
+
+    console.log(item);
+
+    console.log("onInputChange-end");
+  }
+
+  async onClickUpdate() {
+    console.log("onClickUpdate-start");
+    console.log(this.items);
+
+    await axios.post(this.dbInventory, this.items);
+
+    console.log("onClickUpdate-end");
+  }
+
+  async onClickAdd() {
+    console.log("onClickAdd-start");
+    console.log(this.addItem);
+
+    this.items.push(this.addItem);
+
+    console.log("onClickAdd-end");
   }
 }
 </script>
